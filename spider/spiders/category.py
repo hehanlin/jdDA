@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
-import json
-from json import JSONDecodeError
-import chardet
 from spider.items import CategoryItem
 from spider.consts import CATEGORY
-import hashlib
+from re import match
 
 
 class CategorySpider(scrapy.Spider):
@@ -29,19 +26,68 @@ class CategorySpider(scrapy.Spider):
         )
         for each in level_one_cates:
             level = CATEGORY.LEVEL_ONE
-            name = each.xpath("//div[@class, 'mt']//span/text()").extract()
-            url = ''
-            m = hashlib.md5()
-            m.update(
-                str(level)+name+url
-            )
-            hash_str = m.hexdigest()
+            name = each.xpath("//div[@class, 'mt']//span/text()").get()
+            url = ''        # 一级分类没有url
+            path = name
+            is_list = CATEGORY.LIST_NO
             yield CategoryItem(
-                level=CATEGORY.LEVEL_ONE,
-                name=name,
-                url=url,
-                hash_str=hash_str
+                level=level, name=name, url=url, path=path, is_list=is_list, cat_id=None
             )
+            yield self.parse_level_two_cates(each, name)
+
+    def parse_level_two_cates(self, level_one_cate, level_one_name):
+        """
+        解析出二级分类
+        :param level_one_cate: 一级分类的html节点
+        :param level_one_name: 一级分类名
+        :return:
+        """
+        level_two_cates = level_one_cate.xpath("//div[@class='mc']/div[@class='items']/dl")
+        for each in level_two_cates:
+            level = CATEGORY.LEVEL_TWO
+            name = each.xpath("//dt/text()").get()
+            url = ''
+            path = self.generate_path([level_one_name, name])
+            is_list = CATEGORY.LIST_NO
+            yield CategoryItem(
+                level=level, name=name, url=url, path=path, is_list=is_list, cat_id=None
+            )
+            yield self.parse_level_three_cates(each, level_one_name, name)
+
+    def parse_level_three_cates(self, level_two_cate, level_one_name, level_two_name):
+        """
+        解析出三级分类
+        :param level_two_cate: 二级分类的html节点
+        :param level_one_name: 一级分类名
+        :param level_two_name: 二级分类名
+        :return:
+        """
+        level_three_cates = level_two_cate.xpath("//dd/a")
+        for each in level_three_cates:
+            level = CATEGORY.LEVEL_THREE
+            name = each.xpath("text()").get()
+            url = each.xpath("@href").get()
+            path = self.generate_path([level_one_name, level_two_name, name])
+            re_matcher = match(r"/{0,2}list\.jd\.com/list.html\?cat=(.*)", url)
+            if re_matcher:
+                is_list = CATEGORY.LIST_YES
+                cat_id = re_matcher.group(0)
+            else:
+                is_list = CATEGORY.LIST_NO
+                cat_id = None
+            yield CategoryItem(
+                level=level, name=name, url=url, path=path, is_list=is_list, cat_id=cat_id
+            )
+
+    def generate_path(self, cate_list):
+        """
+        生成分类路径
+        :return: str
+        """
+        return CATEGORY.PATH_JOIN_MARK.join(cate_list)
+
+
+
 
 
 

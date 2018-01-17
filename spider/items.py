@@ -18,5 +18,6 @@ class CategoryItem(scrapy.Item):
     level = scrapy.Field()  # 分类级别 consts.py
     name = scrapy.Field()
     url = scrapy.Field()
-    hash_str = scrapy.Field()
-    parent_hash = scrapy.Field()
+    path = scrapy.Field()   # 路径，例如: 礼品箱包-->功能箱包-->电脑包
+    is_list = scrapy.Field()
+    cat_id = scrapy.Field()
