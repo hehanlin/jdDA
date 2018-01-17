@@ -18,7 +18,6 @@ NEWSPIDER_MODULE = 'spider.spiders'
 MONGO_URI = "mongodb://localhost:27017"
 MONGO_DB = 'jdDA'
 
-
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'spider (+http://www.yourdomain.com)'
 

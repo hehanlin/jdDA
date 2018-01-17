@@ -12,3 +12,11 @@ class SpiderItem(scrapy.Item):
     # define the fields for your item here like:
     # name = scrapy.Field()
     pass
+
+
+class CategoryItem(scrapy.Item):
+    level = scrapy.Field()  # 分类级别 consts.py
+    name = scrapy.Field()
+    url = scrapy.Field()
+    hash_str = scrapy.Field()
+    parent_hash = scrapy.Field()

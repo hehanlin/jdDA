@@ -5,10 +5,13 @@
 """
 
 from scrapy.crawler import CrawlerProcess
-from spider.spiders.category import CategorySpider
+from scrapy.utils.project import get_project_settings
 
 
 def start_spider():
-    process = CrawlerProcess()
-    process.crawl(CategorySpider)
+    process = CrawlerProcess(get_project_settings())
+    process.crawl('category')
     process.start()
+
+if __name__ == "__main__":
+    start_spider()

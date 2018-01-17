@@ -7,6 +7,7 @@
 
 import pymongo
 
+
 class SpiderPipeline(object):
 
     def process_item(self, item, spider):
@@ -36,5 +37,16 @@ class MongoPipeline(object):
         self.client.close()
 
     def process_item(self, item, spider):
+        if not self.collection_name:
+            raise NotImplementedError
         self.db[self.collection_name].insert(dict(item))
         return item
+
+
+class CategoryPipeline(MongoPipeline):
+
+    collection_name = "category"
+
+    def open_spider(self, spider):
+        super().open_spider(spider)
+        self.db[self.collection_name].remove()
