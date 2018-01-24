@@ -50,3 +50,11 @@ class CategoryPipeline(MongoPipeline):
     def open_spider(self, spider):
         super().open_spider(spider)
         self.db[self.collection_name].remove()
+
+    def select_list(self):
+        """
+        查询出是list的category
+        :return: list
+        """
+        super().open_spider(None)
+        return self.db[self.collection_name].find({"is_list": True})
