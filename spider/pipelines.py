@@ -58,3 +58,9 @@ class CategoryPipeline(MongoPipeline):
         """
         super().open_spider(None)
         return self.db[self.collection_name].find({"is_list": True})
+
+
+class GoodListPipeline(MongoPipeline):
+
+    collection_name = "good_list"
+

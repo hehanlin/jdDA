@@ -21,3 +21,11 @@ class CategoryItem(scrapy.Item):
     path = scrapy.Field()   # 路径，例如: 礼品箱包-->功能箱包-->电脑包
     is_list = scrapy.Field()
     cat_id = scrapy.Field()
+
+
+class GoodListItem(scrapy.Item):
+    good_num = scrapy.Field()
+    brand_list = scrapy.Field()
+    top_good_list = scrapy.Field()
+    update_time = scrapy.Field()
+
