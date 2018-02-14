@@ -46,8 +46,10 @@ class CategorySpider(scrapy.Spider):
         level_two_cates = level_one_cate.xpath("div[@class='mc']/div[@class='items']/dl")
         for each in level_two_cates:
             level = CATEGORY.LEVEL_TWO
-            name = each.xpath("//dt//text()").get()
-            url = ''
+            name = each.xpath("dt/a/text()").get().strip()
+            if not name:
+                name = each.xpath("dt//text()").get().strip()
+            url = each.xpath("dt/a/@href").get()
             path = self.generate_path([level_one_name, name])
             is_list = CATEGORY.LIST_NO
             yield CategoryItem(

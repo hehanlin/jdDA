@@ -24,8 +24,24 @@ class CategoryItem(scrapy.Item):
 
 
 class GoodListItem(scrapy.Item):
+    _id = scrapy.Field()
+    url = scrapy.Field()
     good_num = scrapy.Field()
+    page_num = scrapy.Field()
     brand_list = scrapy.Field()
     top_good_list = scrapy.Field()
     update_time = scrapy.Field()
 
+
+class BrandGoodListItem(scrapy.Item):
+    _id = scrapy.Field()
+    url = scrapy.Field()
+    good_num = scrapy.Field()
+    page_num = scrapy.Field()
+    good_list = scrapy.Field()
+    update_time = scrapy.Field()
+
+
+class PageBrandGoodListItem(scrapy.Item):
+    _id = scrapy.Field()
+    good_list = scrapy.Field()

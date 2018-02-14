@@ -9,3 +9,5 @@ class CATEGORY(object):
     LIST_NO = False     # -------不----
     PATH_JOIN_MARK = "-->"      # 连接路径的符号
 
+
+MAX_PAGES = 4   # 爬取的最大翻页数

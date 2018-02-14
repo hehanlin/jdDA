@@ -6,7 +6,7 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 import pymongo
-
+from spider.items import BrandGoodListItem, PageBrandGoodListItem
 
 class SpiderPipeline(object):
 
@@ -49,7 +49,9 @@ class CategoryPipeline(MongoPipeline):
 
     def open_spider(self, spider):
         super().open_spider(spider)
-        self.db[self.collection_name].remove()
+        self.db[self.collection_name].drop()
+        self.db.create_collection(self.collection_name)
+        self.db.get_collection(self.collection_name).create_index([("path", pymongo.TEXT)])
 
     def select_list(self):
         """
@@ -63,4 +65,27 @@ class CategoryPipeline(MongoPipeline):
 class GoodListPipeline(MongoPipeline):
 
     collection_name = "good_list"
+
+    def process_item(self, item, spider):
+        self.db[self.collection_name].update(
+            spec={"_id": item["_id"]},
+            document=item,
+            upsert=True
+        )
+
+
+class BrandGoodListPipeline(MongoPipeline):
+
+    collection_name = "brand_good_list"
+
+    def process_item(self, item, spider):
+        if isinstance(item, BrandGoodListItem):
+            self.db[self.collection_name].save(item)
+        elif isinstance(item, PageBrandGoodListItem):
+            self.db[self.collection_name].update(
+                spec={"_id": item['_id']},
+                document={"$push": {"good_list": {"$each": item['good_list']}}}
+            )
+
+
 
