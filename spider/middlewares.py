@@ -8,6 +8,7 @@
 from scrapy import signals
 from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
 from random import choice
+from scrapy_splash import SplashRequest
 
 
 class SpiderSpiderMiddleware(object):
@@ -62,16 +63,35 @@ class MyUserAgentMiddleware(UserAgentMiddleware):
     """
     设置User-Agent
     """
-
     def __init__(self, user_agent):
         self.user_agent = user_agent
 
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            user_agent=crawler.settings.get("USER_AGENT")
+            user_agent=crawler.settings.get("ROBOT_USER_AGENT")
         )
 
     def process_request(self, request, spider):
         agent = choice(self.user_agent)
         request.headers['User-Agent'] = agent
+
+
+class CommentHeadersMiddleware(MyUserAgentMiddleware):
+
+    @classmethod
+    def from_crawler(cls, crawler):
+        return cls(
+            user_agent=crawler.settings.get("PC_USER_AGENT")
+        )
+
+    def process_request(self, request, spider):
+        if isinstance(request, SplashRequest):
+            return
+        request.headers.update({
+            'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'zh-CN,zh;q=0.9',
+            'User-Agent': choice(self.user_agent)
+        })
+

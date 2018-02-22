@@ -6,7 +6,9 @@
 # See: http://doc.scrapy.org/en/latest/topics/item-pipeline.html
 
 import pymongo
-from spider.items import BrandGoodListItem, PageBrandGoodListItem
+from spider.items import BrandGoodListItem, PageBrandGoodListItem, GoodDetailItem, CommentListItem
+from spider.consts import GOODDETAIL
+
 
 class SpiderPipeline(object):
 
@@ -85,6 +87,22 @@ class BrandGoodListPipeline(MongoPipeline):
             self.db[self.collection_name].update(
                 spec={"_id": item['_id']},
                 document={"$push": {"good_list": {"$each": item['good_list']}}}
+            )
+
+
+class GoodDetailPipeline(MongoPipeline):
+
+    collection_name = "good_detail"
+
+    def process_item(self, item, spider):
+        if isinstance(item, GoodDetailItem):
+            self.db[self.collection_name].save(item)
+        elif isinstance(item, CommentListItem):
+            score = item['score']
+            comment_name = GOODDETAIL.DIFF_COMMENTS_NAME[score]
+            self.db[self.collection_name].update(
+                spec={"_id": item['_id']},
+                document={"$push": {comment_name: {"$each": item['comment_list']}}}
             )
 
 

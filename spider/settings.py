@@ -20,7 +20,7 @@ NEWSPIDER_MODULE = 'spider.spiders'
 MONGO_URI = "mongodb://localhost:27017"
 MONGO_DB = 'jdDA'
 
-USER_AGENT = [
+ROBOT_USER_AGENT = [
     'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
     'Mozilla/5.0 (compatible; Bingbot/2.0; +http://www.bing.com/bingbot.htm)',
     'Mozilla/5.0 (compatible; Yahoo! Slurp; http://help.yahoo.com/help/us/ysearch/slurp)',
@@ -28,6 +28,10 @@ USER_AGENT = [
     'Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)',
     'Mozilla/5.0 (compatible; YandexBot/3.0; +http://yandex.com/bots)',
     'ia_archiver (+http://www.alexa.com/site/help/webmasters; crawler@alexa.com)',
+]
+
+PC_USER_AGENT = [
+
 ]
 
 SPLASH_URL = 'http://localhost:8050'

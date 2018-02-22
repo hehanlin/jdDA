@@ -10,6 +10,7 @@ name = "pypi"
 scrapy = "*"
 scrapy-splash = "*"
 pymongo = "*"
+chardet = "*"
 
 
 [dev-packages]

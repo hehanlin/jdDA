@@ -45,3 +45,22 @@ class BrandGoodListItem(scrapy.Item):
 class PageBrandGoodListItem(scrapy.Item):
     _id = scrapy.Field()
     good_list = scrapy.Field()
+
+
+class GoodDetailItem(scrapy.Item):
+    _id = scrapy.Field()
+    url = scrapy.Field()
+    ids = scrapy.Field()
+    name = scrapy.Field()
+    desc = scrapy.Field()
+    price = scrapy.Field()
+    comment_count = scrapy.Field()
+    attr_list = scrapy.Field()
+    comment_desc = scrapy.Field()
+
+
+class CommentListItem(scrapy.Item):
+    _id = scrapy.Field()
+    comment_list = scrapy.Field()
+    score = scrapy.Field()
+
