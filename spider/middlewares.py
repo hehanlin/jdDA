@@ -69,29 +69,10 @@ class MyUserAgentMiddleware(UserAgentMiddleware):
     @classmethod
     def from_crawler(cls, crawler):
         return cls(
-            user_agent=crawler.settings.get("ROBOT_USER_AGENT")
+            user_agent=crawler.settings.get("PC_USER_AGENT")
         )
 
     def process_request(self, request, spider):
         agent = choice(self.user_agent)
         request.headers['User-Agent'] = agent
-
-
-class CommentHeadersMiddleware(MyUserAgentMiddleware):
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        return cls(
-            user_agent=crawler.settings.get("PC_USER_AGENT")
-        )
-
-    def process_request(self, request, spider):
-        if isinstance(request, SplashRequest):
-            return
-        request.headers.update({
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'Accept-Language': 'zh-CN,zh;q=0.9',
-            'User-Agent': choice(self.user_agent)
-        })
 

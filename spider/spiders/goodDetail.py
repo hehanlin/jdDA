@@ -6,15 +6,16 @@ from spider.items import GoodDetailItem, CommentListItem
 from spider.consts import GOODDETAIL
 from chardet import detect
 from json import loads
+from math import ceil
+from spider.settings import DOWNLOADER_MIDDLEWARES
 
 
 class GoodDetailSpider(scrapy.Spider):
     name = 'goodDetail'
-    allowed_domains = ['item.jd.com']
+    allowed_domains = ['item.jd.com', 'sclub.jd.com']
     custom_settings = {
-        'DOWNLOADER_MIDDLEWARES': {
-            'spider.middlewares.MyUserAgentMiddleware': 543,
-            'spider.middlewares.CommentHeadersMiddleware': 544
+        'ITEM_PIPELINES': {
+            'spider.pipelines.GoodDetailPipeline': 1
         }
     }
 
@@ -24,7 +25,10 @@ class GoodDetailSpider(scrapy.Spider):
         self._id = search(r"(\d+).html", start_url).group(1)
 
     def start_requests(self):
-        yield SplashRequest(url=self.start_url)
+        yield SplashRequest(url=self.start_url, args={
+            "images": 0,
+            "wait": 3
+        })
 
     def parse(self, response):
         ids = response.xpath("//div[@class='dd']/div/@data-sku").extract()
@@ -41,7 +45,7 @@ class GoodDetailSpider(scrapy.Spider):
                 'values': each.xpath("div[@class='dd']/div/@data-value").extract()
             } for each in attr_node_list
         ]
-        self.comment_version = search(r"commentVersion:\'(\d+)\'", response.body, S).group(1)
+        self.comment_version = search(r"commentVersion:\'(\d+)\'", response.text, S).group(1)
         item = GoodDetailItem(
             _id=self._id,
             url=self.start_url,
@@ -71,14 +75,17 @@ class GoodDetailSpider(scrapy.Spider):
         )
 
     def get_comment_summary(self, response):
-        gass_charset = detect(response.body)
-        encoding = gass_charset.get('encoding', '')
-        body = response.body.decode(encoding, 'ignore')
+        try:
+            body = response.body.decode("GB2312", 'ignore')
+        except:
+            gass_charset = detect(response.body)
+            encoding = gass_charset.get('encoding', '')
+            body = response.body.decode(encoding, 'ignore')
         comment_json = search(r"\((.*)\)", body, S)
         if comment_json and comment_json.group(1):
             data = loads(comment_json.group(1))
-            good_detail_item = response['meta'].get('item')
-            setattr(good_detail_item, 'comment_desc', data)
+            good_detail_item = response.meta.get('item')
+            good_detail_item['comment_desc'] = data
             good_detail_item['comment_desc']['after_comments'] = list()
             good_detail_item['comment_desc']['img_comments'] = list()
             good_detail_item['comment_desc']['general_comments'] = list()
@@ -86,28 +93,29 @@ class GoodDetailSpider(scrapy.Spider):
             yield good_detail_item
             # 所有评论
             max_page = data.get('maxPage', 1)
-            self.get_diff_comment(GOODDETAIL.ALL_COMMENT, max_page)
+
+            yield from self.get_diff_comment(GOODDETAIL.ALL_COMMENT, max_page)
             # 追评
             after_count = data['productCommentSummary']['afterCount']
-            after_page = after_count//GOODDETAIL.COMMENT_PAGE_NUM+1
-            self.get_diff_comment(GOODDETAIL.AFTER_COMMENT, after_page)
+            after_page = ceil(after_count/GOODDETAIL.COMMENT_PAGE_NUM)
+            yield from self.get_diff_comment(GOODDETAIL.AFTER_COMMENT, after_page)
             # 有图
             img_count = data['imageListCount']
-            img_page = img_count//GOODDETAIL.COMMENT_PAGE_NUM+1
-            self.get_diff_comment(GOODDETAIL.IMG_COMMENT, img_page)
+            img_page = ceil(img_count/GOODDETAIL.COMMENT_PAGE_NUM)
+            yield from self.get_diff_comment(GOODDETAIL.IMG_COMMENT, img_page)
             # 中评
             general_count = data['productCommentSummary']['generalCount']
-            general_page = general_count//GOODDETAIL.COMMENT_PAGE_NUM+1
-            self.get_diff_comment(GOODDETAIL.GENERAL_COMMENT, general_page)
+            general_page = ceil(general_count/GOODDETAIL.COMMENT_PAGE_NUM)
+            yield from self.get_diff_comment(GOODDETAIL.GENERAL_COMMENT, general_page)
             # 差评
             poor_count = data['productCommentSummary']['poorCount']
-            poor_page = poor_count//GOODDETAIL.COMMENT_PAGE_NUM+1
-            self.get_diff_comment(GOODDETAIL.POOR_COMMENT, poor_page)
+            poor_page = ceil(poor_count/GOODDETAIL.COMMENT_PAGE_NUM)
+            yield from self.get_diff_comment(GOODDETAIL.POOR_COMMENT, poor_page)
 
     def get_diff_comment(self, score, max_page):
         start_page = 1 if score == 0 else 0
         max_page = max_page if max_page < GOODDETAIL.COMMENT_MAX_PAGES else GOODDETAIL.COMMENT_MAX_PAGES
-        for i in range(start_page, max_page):
+        for i in range(start_page, int(max_page+1)):
             yield scrapy.Request(
                 url=GOODDETAIL.COMMENT_URL.format(
                     comment_version=self.comment_version,
@@ -125,9 +133,12 @@ class GoodDetailSpider(scrapy.Spider):
             )
 
     def get_all_comment(self, response):
-        gass_charset = detect(response.body)
-        encoding = gass_charset.get('encoding', '')
-        body = response.body.decode(encoding, 'ignore')
+        try:
+            body = response.body.decode("GB2312", 'ignore')
+        except:
+            gass_charset = detect(response.body)
+            encoding = gass_charset.get('encoding', '')
+            body = response.body.decode(encoding, 'ignore')
         comment_json = search(r"\((.*)\)", body, S)
         if comment_json and comment_json.group(1):
             data = loads(comment_json.group(1))
@@ -135,7 +146,7 @@ class GoodDetailSpider(scrapy.Spider):
             yield CommentListItem(
                 _id=self._id,
                 comment_list=comments,
-                score=response['meta'].get('score')
+                score=response.meta.get('score')
             )
 
 

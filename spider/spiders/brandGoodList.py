@@ -28,7 +28,8 @@ class BrandGoodlistSpider(scrapy.Spider):
 
     def start_requests(self):
         yield SplashRequest(self.start_url, args={
-            "images": 0
+            "images": 0,
+            "wait": 3
         })
 
     def parse(self, response):

@@ -54,6 +54,7 @@ class GoodDetailItem(scrapy.Item):
     name = scrapy.Field()
     desc = scrapy.Field()
     price = scrapy.Field()
+    img = scrapy.Field()
     comment_count = scrapy.Field()
     attr_list = scrapy.Field()
     comment_desc = scrapy.Field()
