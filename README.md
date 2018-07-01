@@ -1,6 +1,6 @@
 ## 京东数据分析系统
 
-##### 地址：http://jdDA.hehanlin.cn
+##### 访问地址：http://jdDA.hehanlin.cn:8000
 ##### 博文：https://www.hehanlin.cn
 ##### 作者：hehanlin
 
